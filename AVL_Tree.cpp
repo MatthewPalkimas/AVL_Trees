@@ -192,10 +192,120 @@ void insert(person * p, node * & t)
 	}
 }
 
+void remove(node * & t, string fname, string lname, bool & found)
+{
+	while(t != NULL)
+	{
+		if(lname == t->data->lname && fname == t->data->fname)
+		{
+			found = true;
+			counter1 -= 1;
+			break;
+		}
+		else if (lname < t->data->lname)
+			t = t->left;
+		else if (lname == t->data->lname)
+		{
+			if(fname < t->data->fname)
+				t = t->left;
+			else if(fname > t->data->fname)
+				t = t->right;
+		}
+		else
+			t = t->right;
+	}
+	if(!found)
+		return;
+	if(t->right == NULL && t->left == NULL)
+		t = NULL;
+	else if(t->right == NULL && t->left != NULL)
+		t = t->left;
+	else if(t->right != NULL && t->left == NULL)
+		t = t->right;
+	else
+	{
+				int balance = get_height(t->left) - get_height(t->right);
+					if(balance == -1)
+						;
+					else if(balance == 1)
+						t = t->left;
+					else
+						t = t->right;
+				}
+	t->height = 1 + max(get_height(t->left), get_height(t->right));
+	int balance = get_height(t->left) - get_height(t->right);
+	//printtree(t);
+	cout << "Balance at this node: " << balance << endl;
+	if (balance == 2)
+	{
+		//fix for balance
+		//we know that it was inserted into the left node since the balance is positive 2, so we can pass in the left node to see which case it is
+		int yeet = get_balance(t->left);
+		if (yeet == 1)
+		{
+			//printtree(t);
+			node * temp = t->left;
+			t->left = temp->right;
+			temp->right = t;
+			t = temp;
+			t->right->height = 1 + max(get_height(t->right->left), get_height(t->right->right));
+			//cout << t->height << " edited tree +2(+1)\n";
+			//printtree(t);
+		}
+		else if (yeet == -1)
+		{
+			//printtree(t);
+			node * temp = t->left->right;
+			t->left->right = temp->left;
+			temp->left = t->left;
+			node * temp2 = t;
+			temp2->left = temp->right;
+			temp->right = temp2;
+			t = temp;						
+			t->height += 1;
+			t->right->height -= 2;
+			t->left->height -= 1;
+			//cout << t->height << " edited tree +2(-1)\n";
+			//printtree(t);
+		}
+	}
+	else if (balance == -2)
+	{
+		//flip side of above fix
+		int yeet = get_balance(t->right);
+		if (yeet == -1)
+		{
+			//printtree(t);
+			node * temp = t->right;
+			t->right = temp->left;
+			temp->left = t;
+			t = temp;
+			t->left->height = 1 + max(get_height(t->right->left), get_height(t->right->right));
+			//cout << t->height << " edited tree -2(-1)\n";
+			//printtree(t);
+		}
+		else if (yeet == 1)
+		{
+			//printtree(t);
+			node * temp = t->right->left;
+			t->right->left = temp->right;
+			temp->right = t->right;
+			node * temp2 = t;
+			temp2->right = temp->left;
+			temp->left = temp2;
+			t = temp;						
+			t->height += 1;
+			t->left->height -= 2;
+			t->right->height -= 1;
+			//cout << t->height << " edited tree -2(+1)\n";
+			//printtree(t);
+		}
+	}
+}
+
 void maketree(node * & tree)
 {
-    ifstream fin("/home/www/class/een511/database.txt");
-    //ifstream fin("test.txt");
+    ifstream fin("database.txt");
     if(fin.fail())
     {
         cout << "Error opening file!\n";
@@ -213,7 +323,6 @@ void maketree(node * & tree)
 		insert(temp, tree);
 		counter1++;
 		//printtree(tree);
-		//sleep(2);
 	}
     fin.close();
 	cout << "\n\x1B[32m AVL Tree has built successfully!\n";
@@ -226,6 +335,8 @@ void verify_worker(node * tree)
 	int balance = get_balance(tree);	
 	if(balance > -2 && balance < 2)
 		counter2++;
+	else
+		cout << "balance at node was : " << balance << endl;
 	if(tree->right != NULL)
 		verify_worker(tree->right);
 }
@@ -326,7 +437,7 @@ void cycle(node * AVL)
 			cin >> ln;
 			stringModify(fn);
 			stringModify(ln);
-			//remove(fn, ln, AVL);
+			remove(AVL, fn, ln, found);
 			if(!found)
 				cout << "\n\x1B[31mPERSON NOT FOUND WITH NAME: " << fn << " " << ln << endl;
 		}
