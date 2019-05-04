@@ -192,8 +192,9 @@ void insert(person * p, node * & t)
 	}
 }
 
-void remove(node * & t, string fname, string lname, bool & found)
+void remove(node * t, string fname, string lname, bool & found)
 {
+	node * being_deleted;
 	while(t != NULL)
 	{
 		if(lname == t->data->lname && fname == t->data->fname)
@@ -211,7 +212,7 @@ void remove(node * & t, string fname, string lname, bool & found)
 			else if(fname > t->data->fname)
 				t = t->right;
 		}
-		else
+		else //lname > data lname
 			t = t->right;
 	}
 	if(!found)
@@ -224,82 +225,19 @@ void remove(node * & t, string fname, string lname, bool & found)
 		t = t->right;
 	else
 	{
-				int balance = get_height(t->left) - get_height(t->right);
-					if(balance == -1)
-						;
-					else if(balance == 1)
-						t = t->left;
-					else
-						t = t->right;
-				}
-	t->height = 1 + max(get_height(t->left), get_height(t->right));
-	int balance = get_height(t->left) - get_height(t->right);
-	//printtree(t);
-	cout << "Balance at this node: " << balance << endl;
-	if (balance == 2)
-	{
-		//fix for balance
-		//we know that it was inserted into the left node since the balance is positive 2, so we can pass in the left node to see which case it is
-		int yeet = get_balance(t->left);
-		if (yeet == 1)
+		being_deleted = t;
+		being_deleted->right;
+		int num_down = 0;
+		while(being_deleted->left != NULL)
 		{
-			//printtree(t);
-			node * temp = t->left;
-			t->left = temp->right;
-			temp->right = t;
-			t = temp;
-			t->right->height = 1 + max(get_height(t->right->left), get_height(t->right->right));
-			//cout << t->height << " edited tree +2(+1)\n";
-			//printtree(t);
+			being_deleted = being_deleted->left;
+			num_down++;
 		}
-		else if (yeet == -1)
-		{
-			//printtree(t);
-			node * temp = t->left->right;
-			t->left->right = temp->left;
-			temp->left = t->left;
-			node * temp2 = t;
-			temp2->left = temp->right;
-			temp->right = temp2;
-			t = temp;						
-			t->height += 1;
-			t->right->height -= 2;
-			t->left->height -= 1;
-			//cout << t->height << " edited tree +2(-1)\n";
-			//printtree(t);
-		}
-	}
-	else if (balance == -2)
-	{
-		//flip side of above fix
-		int yeet = get_balance(t->right);
-		if (yeet == -1)
-		{
-			//printtree(t);
-			node * temp = t->right;
-			t->right = temp->left;
-			temp->left = t;
-			t = temp;
-			t->left->height = 1 + max(get_height(t->right->left), get_height(t->right->right));
-			//cout << t->height << " edited tree -2(-1)\n";
-			//printtree(t);
-		}
-		else if (yeet == 1)
-		{
-			//printtree(t);
-			node * temp = t->right->left;
-			t->right->left = temp->right;
-			temp->right = t->right;
-			node * temp2 = t;
-			temp2->right = temp->left;
-			temp->left = temp2;
-			t = temp;						
-			t->height += 1;
-			t->left->height -= 2;
-			t->right->height -= 1;
-			//cout << t->height << " edited tree -2(+1)\n";
-			//printtree(t);
-		}
+		t->data = being_deleted->data;
+		t = t->right;
+		for(int i = 1; i < num_down; i++)
+			t = t->left;
+		t->left = t->left->right;
 	}
 }
 
@@ -431,6 +369,7 @@ void cycle(node * AVL)
 		else if (input == "remove")
 		{
 			string fn, ln;
+			cout << "\x1B[1m\x1B[36m Still a WIP, harder than expected!\n";
 			cout << "\x1B[1m\x1B[36m enter first name\n\x1B[0m > ";
 			cin >> fn;
 			cout << "\x1B[1m\x1B[36m enter last name\n\x1B[0m > ";			 
